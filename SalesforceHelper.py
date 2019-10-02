@@ -5,7 +5,6 @@ from .SalesforceDataGenerator import SalesforceDataGenerator
 
 class SalesforceFaker:
     def __init__(self,instance_url,username,password,security_token,sandbox):
-    # def __init__(self):
         self.data_gen = SalesforceDataGenerator()
         self.instance_url =instance_url
         self.username = username
@@ -35,7 +34,12 @@ class SalesforceFaker:
         '''
         This function generates data for the given table name of the saleforce
 
-        table_name : 
+        table_name(str) : API_NAME of salesforce
+        num_rows(int)  : number of rows to generate
+        reference(bool) : flag to generate data for reference field or not
+
+          Returns:
+          DataFrame : generated data  dataframe
 
         '''
         details = getattr(self.sf, table_name).describe()

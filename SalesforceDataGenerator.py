@@ -151,11 +151,12 @@ class SalesforceDataGenerator:
         This function returns DataSeries of given datatype  for the desired length/numbers.  
         (DataSeries is like a list, or column in database)
 
+        Parameters:
         dtype (str) : data type for which generate is needed
         number(int) : number of elements wanted in the DataSeries 
         conf(dict)  : it is if any to pass extra information about the field.
                      We need this while generating data for   'multipicklist','picklist' or 'combobox'  
-         Returns:
+        Returns:
         DataSeries  : Data Series for the generated data
         """
         try:
@@ -169,17 +170,63 @@ class SalesforceDataGenerator:
 
 
     def generate_dataframe(self,column_names = ['Id'], column_types = ['anytype'], num_rows = 10, conf = {}):
-        
+
+        '''
+        This function generates dataframe for the given parameters
+       
+
+        Parameters:
+        column_names(list) : list of column names
+        column_types(list) : list of column data types
+        num_rows(int)  : number of rows to generate
+        conf(dict)  : it is if any to pass extra information about the field.
+                       We need this while generating data for   'multipicklist','picklist' or 'combobox'  
+
+        Returns : 
+        DataFrame : generated data  dataframe
+        '''
         if len(column_names) != len(column_types):
             raise ValueError(f"Length of column_names and column_types mismatched lenght of names = {len(column_names)} Length of column_types = {len(column_types)}")
         return pd.DataFrame({column_name : self.gen_data_series(dtype = column_type,number = num_rows,conf =  conf.get(column_name,{})) for column_name, column_type in zip(column_names, column_types)})
 
     def generate_csv(self,filename = 'data.csv' ,column_names = ['Id'], column_types = ['anytype'], num_rows = 10, conf = {}):
+           '''
+        This function generates dataframe for the given parameters and saves it in csv
+       
+
+        Parameters:
+        filename(str) : name of file to save generated data 
+        column_names(list) : list of column names
+        column_types(list) : list of column data types
+        num_rows(int)  : number of rows to generate
+        conf(dict)  : it is if any to pass extra information about the field.
+                       We need this while generating data for   'multipicklist','picklist' or 'combobox'  
+
+        Returns : 
+        DataFrame : generated data  dataframe/saves csv file
+        '''
+        
         df = self.generate_dataframe(column_names , column_types ,num_rows,conf )
         df.to_excel(filename)
         return df
 
     def generate_excel(self,filename = 'data.xlsx' ,column_names = ['Id'], column_types = ['anytype'], num_rows = 10, conf = {}):
+          '''
+        This function generates dataframe for the given parameters and saves it in excel
+       
+
+        Parameters:
+        filename(str) : name of file to save generated data 
+        column_names(list) : list of column names
+        column_types(list) : list of column data types
+        num_rows(int)  : number of rows to generate
+        conf(dict)  : it is if any to pass extra information about the field.
+                       We need this while generating data for   'multipicklist','picklist' or 'combobox'  
+
+        Returns : 
+        DataFrame : generated data  dataframe/saves excel file
+        '''
+        
         df = self.generate_dataframe(column_names , column_types ,num_rows,conf )
         df.to_csv(filename)
         return df
