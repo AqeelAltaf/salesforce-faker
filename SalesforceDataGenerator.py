@@ -1,38 +1,98 @@
 import pandas as pd
 import random
 from faker import Faker
-from .SalesforceDataGenerator import SalesforceDataGenerator
+from datetime import datetime
+import time
 
 class SalesforceDataGenerator:
 
     def __init__(self):
+        '''Initializing class'''
         self.fake = Faker()
+
+    def gen_date(self):
+        ''' This function generates  date in format of MM/dd/yyyy
+        
+        Returns:
+        Date :   format of MM/dd/yyyy
+        '''
+        return  self.fake.date(pattern='%m/%d/%Y')
 
 
     def gen_from_multipicklist(self,picklist_values):
+        '''
+        This function generates more than one random comma separated values from given picklist values
 
+        Parameters:
+        picklist_values (list): all possible values of picklist
+
+        Returns:
+        str: random values(comma separated) from given picklist_values 
+
+        '''
         return ','.join(random.choices([str(_) for _ in picklist_values], k=random.randint(1,len(picklist_values))))
 
     def gen_from_picklist(self,picklist_values):
+        '''
+        This function picks data from the given picklist values
+
+        Parameters:
+        picklist_values (list): all possible values of picklist
+
+        Returns:
+        str: random value from given picklist_values 
+
+        '''
         return random.choice(picklist_values) 
 
     def gen_from_combobox(self,picklist_values):
+        '''
+        This function picks data from the given picklist values , i
+
+        Parameters:
+        picklist_values (list): all possible values of picklist
+
+        Returns:
+        str: random value from given picklist_values '''
+        
         picklist_values.append(self.fake.pystr())
         return random.choice(picklist_values) 
 
     def  gen_base64(self):
+        """This function generates base64 type string
+        
+        Returns:
+        str :  base64 type string
+
+        """
         return self.fake.pystr(150,max_chars=1000)
 
     def gen_percentage(self):
-        """This function returns random percentage"""
+        """This function returns random percentage string
+        
+        Returns:
+        str : returns random percentage string example 19.4%
+        """
         return f"{random.uniform(0,100):.2f}%"
 
     def generate_location(self):
+        """"""
+
         self.fake.location_on_land()[:2]
 
 
     def get_generator(self,dtype = 'anyType'):
-        
+        """ This is a helper function which returns generator for given datatype
+
+
+        Paramters:
+        dtype (str) : data type for which generate is needed
+
+        Returns:
+        method : generator for given datatype
+
+        """
+        # checking if dtype is str
         if type(dtype) != str:
             raise ValueError("Data type must be of type str, found " + str(type(dtype)))
 
@@ -43,7 +103,7 @@ class SalesforceDataGenerator:
         'combobox': self.gen_from_combobox,
         #  'complexvalue' : ,
         'currency' : self.fake.currency_code,
-        'date' : self.fake.date,
+        'date' : self.gen_date,
         'datetime' : self.fake.date_time,
         'double': self.fake.pyfloat ,
         'email' : self.fake.email,
@@ -68,16 +128,35 @@ class SalesforceDataGenerator:
 
 
     def generate_random(self,dtype='anyType',conf = {}):
+        """ This method returns generated value for given datatype 
+
+        Parameters:
+        dtype (str) : data type for which generate is needed
+
+        Returns:
+        multiple: it returns data of given dtype
         
+
+        """
+        # if data type is not  'multipicklist','picklist' or 'combobox' then generated data using faker 
         if dtype.lower() not in ['multipicklist','picklist','combobox']:
             return self.get_generator(dtype= dtype)()
+        # else select value from given list in config
         else:
             return self.get_generator(dtype= dtype)(conf.get('picklistvalues',[None]))
 
+
     def gen_data_series(self,dtype = 'anyType', number = 10,conf = {}):
         """
-        This function returns DataSeries of given datatype  for the desired length/numbers.
-        
+        This function returns DataSeries of given datatype  for the desired length/numbers.  
+        (DataSeries is like a list, or column in database)
+
+        dtype (str) : data type for which generate is needed
+        number(int) : number of elements wanted in the DataSeries 
+        conf(dict)  : it is if any to pass extra information about the field.
+                     We need this while generating data for   'multipicklist','picklist' or 'combobox'  
+         Returns:
+        DataSeries  : Data Series for the generated data
         """
         try:
             length = int(number)
@@ -90,6 +169,7 @@ class SalesforceDataGenerator:
 
 
     def generate_dataframe(self,column_names = ['Id'], column_types = ['anytype'], num_rows = 10, conf = {}):
+        
         if len(column_names) != len(column_types):
             raise ValueError(f"Length of column_names and column_types mismatched lenght of names = {len(column_names)} Length of column_types = {len(column_types)}")
         return pd.DataFrame({column_name : self.gen_data_series(dtype = column_type,number = num_rows,conf =  conf.get(column_name,{})) for column_name, column_type in zip(column_names, column_types)})

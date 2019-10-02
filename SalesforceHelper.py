@@ -1,9 +1,12 @@
 from simple_salesforce import Salesforce
 from simple_salesforce import SFType
 from functools import lru_cache
+from .SalesforceDataGenerator import SalesforceDataGenerator
 
 class SalesforceFaker:
     def __init__(self,instance_url,username,password,security_token,sandbox):
+    # def __init__(self):
+        self.data_gen = SalesforceDataGenerator()
         self.instance_url =instance_url
         self.username = username
         self.password = password
@@ -11,7 +14,7 @@ class SalesforceFaker:
         self.security_token = security_token
         self.sf = Salesforce(instance_url=self.instance_url,username=self.username,password=self.password,security_token=self.security_token,sandbox=self.sandbox)
 
-
+    
     def get_pick_list_values(self,field):
         id_list = list(map(lambda x : x['label'],field['picklistValues']))
         if not id_list:
@@ -28,8 +31,12 @@ class SalesforceFaker:
             return None
         
 
-    def generate_data_for_table(self,table_name, reference = True):
+    def generate_data_for_table(self,table_name,num_rows=10 , reference = True):
         '''
+        This function generates data for the given table name of the saleforce
+
+        table_name : 
+
         '''
         details = getattr(self.sf, table_name).describe()
         field_name_type = {field['name'] : field['type'] for field in details['fields'] if field['type'] != 'reference'}
@@ -45,8 +52,15 @@ class SalesforceFaker:
                         field_conf[field['name']] = {'picklistvalues':[None]}
                     else:
                         raise ValueError(f'There is no value in table {field["name"]} to use it as a foreign key')
-        return field_name_type , field_conf
-        # return self.sfaker.generate_dataframe(column_names= list(field_name_type.keys()), column_types = list(field_name_type.values()), num_rows=10, conf = field_conf)
+        # return field_name_type , field_conf
+        return self.data_gen.generate_dataframe(column_names= list(field_name_type.keys()), column_types = list(field_name_type.values()), num_rows=num_rows, conf = field_conf)
+
+    def generate_csv_for_table(self,table_name, num_rows=10 ,reference = True,filename = 'data.csv'):
+        df = self.generate_data_for_table(table_name,num_rows=num_rows ,reference = reference)
+        df.to_csv(filename, index = False)
+
+
+
 ## todo 
 # complete dataFrame from salesforce functionality 
 # give option to export data in csv and excel 
