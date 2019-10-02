@@ -59,7 +59,20 @@ class SalesforceFaker:
         # return field_name_type , field_conf
         return self.data_gen.generate_dataframe(column_names= list(field_name_type.keys()), column_types = list(field_name_type.values()), num_rows=num_rows, conf = field_conf)
 
+
     def generate_csv_for_table(self,table_name, num_rows=10 ,reference = True,filename = 'data.csv'):
+        '''
+        This function generates data for the given table name of the saleforce and saves it in csv file
+
+        table_name(str) : API_NAME of salesforce
+        num_rows(int)  : number of rows to generate
+        reference(bool) : flag to generate data for reference field or not
+        filename(str) : name of file to save generated data 
+
+          Returns:
+          file (csv) : saves generated data in csv 
+
+        '''
         df = self.generate_data_for_table(table_name,num_rows=num_rows ,reference = reference)
         df.to_csv(filename, index = False)
 

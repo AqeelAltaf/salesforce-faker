@@ -233,5 +233,4 @@ class SalesforceDataGenerator:
 
 # sf = SalesforceFaker()
 # sf.generate_excel('file.xlsx',['address1','time','date_','value'],['address','time','date','picklist'],50,conf = {'value':{'picklistvalues':['one','two']}})
-## TODO 
-# adding comments
+
