@@ -16,8 +16,14 @@ class SalesforceDataGenerator:
         Returns:
         Date :   format of MM/dd/yyyy
         '''
-        return  self.fake.date(pattern='%m/%d/%Y')
+        return  self.fake.date(pattern='%Y-%m-%d')
 
+    def get_float(self, min_value=0 , max_value=100):
+        return round(self.fake.pyfloat(min_value=min_value, max_value=max_value),2)
+    
+
+    def get_currency_float(self):
+        return round(self.fake.pyfloat(min_value=1, max_value=100),2)
 
     def gen_from_multipicklist(self,picklist_values):
         '''
@@ -30,7 +36,7 @@ class SalesforceDataGenerator:
         str: random values(comma separated) from given picklist_values 
 
         '''
-        return ','.join(random.choices([str(_) for _ in picklist_values], k=random.randint(1,len(picklist_values))))
+        return ';'.join(random.choices([str(_) for _ in picklist_values], k=random.randint(1,len(picklist_values))))
 
     def gen_from_picklist(self,picklist_values):
         '''
@@ -73,7 +79,8 @@ class SalesforceDataGenerator:
         Returns:
         str : returns random percentage string example 19.4%
         """
-        return f"{random.uniform(0,100):.2f}%"
+        return round(self.fake.pyfloat(min_value=0, max_value=100),2)
+        # return f"{random.uniform(0,100):.2f}%"
 
     def generate_location(self):
         """"""
@@ -102,10 +109,10 @@ class SalesforceDataGenerator:
         'base64' : self.gen_base64,
         'combobox': self.gen_from_combobox,
         #  'complexvalue' : ,
-        'currency' : self.fake.currency_code,
+        'currency' : self.get_currency_float,
         'date' : self.gen_date,
-        'datetime' : self.fake.date_time,
-        'double': self.fake.pyfloat ,
+        'datetime' : self.gen_date,
+        'double': self.get_float ,
         'email' : self.fake.email,
         'id' :self.fake.pystr,
         'int' : self.fake.pyint,
@@ -139,11 +146,15 @@ class SalesforceDataGenerator:
 
         """
         # if data type is not  'multipicklist','picklist' or 'combobox' then generated data using faker 
-        if dtype.lower() not in ['multipicklist','picklist','combobox']:
-            return self.get_generator(dtype= dtype)()
+        if dtype.lower()  in ['multipicklist','picklist','combobox']:
+            return self.get_generator(dtype= dtype)(conf.get('picklistvalues',[None]))
+        # adding text before textual data types
+        elif dtype.lower()  in  ['textarea','string']:
+            return 'UAT_test_420 ' + self.get_generator(dtype= dtype)()
         # else select value from given list in config
         else:
-            return self.get_generator(dtype= dtype)(conf.get('picklistvalues',[None]))
+            return self.get_generator(dtype= dtype)()
+            
 
 
     def gen_data_series(self,dtype = 'anyType', number = 10,conf = {}):
@@ -190,8 +201,9 @@ class SalesforceDataGenerator:
         return pd.DataFrame({column_name : self.gen_data_series(dtype = column_type,number = num_rows,conf =  conf.get(column_name,{})) for column_name, column_type in zip(column_names, column_types)})
 
     def generate_csv(self,filename = 'data.csv' ,column_names = ['Id'], column_types = ['anytype'], num_rows = 10, conf = {}):
-           '''
-        This function generates dataframe for the given parameters and saves it in csv
+
+        '''
+         This function generates dataframe for the given parameters and saves it in csv
        
 
         Parameters:
@@ -206,12 +218,12 @@ class SalesforceDataGenerator:
         DataFrame : generated data  dataframe/saves csv file
         '''
         
-        df = self.generate_dataframe(column_names , column_types ,num_rows,conf )
+        df = self.generate_dataframe(column_names , column_types ,num_rows,conf)
         df.to_excel(filename)
         return df
 
     def generate_excel(self,filename = 'data.xlsx' ,column_names = ['Id'], column_types = ['anytype'], num_rows = 10, conf = {}):
-          '''
+        '''
         This function generates dataframe for the given parameters and saves it in excel
        
 
