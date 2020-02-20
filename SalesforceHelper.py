@@ -5,18 +5,37 @@ import pandas as pd
 from .SalesforceDataGenerator import SalesforceDataGenerator
 
 class SalesforceFaker:
-    def __init__(self,instance_url,username,password,security_token,sandbox):
+    def __init__(self,instance_url,username,password,security_token,sandbox, file_for_default_ids = ''):
+        '''
+        This function generates data for the given table name of the saleforce
+
+        instance_url (str) : Salesforce Instance URL
+        username (str)  : Salesforce username
+        password(str)  : password
+        security_token (str) :  Salesforce Security Token
+        sandbox (str) : environment name
+        file_for_default_ids (str) : csv filename in which default ids for the objects are given. 
+                                     there should be two columns in file.
+                                     1. object  -  having object names 
+                                     2. id      -  having ids for respective object  
+
+
+        '''
+
         self.data_gen = SalesforceDataGenerator()
         self.instance_url =instance_url
         self.username = username
         self.password = password
         self.sandbox = sandbox
         self.security_token = security_token
-        table_ids = pd.read_csv('uat_parent_lists.csv')
-        table_ids.fillna('',inplace = True)
-        table_ids =  table_ids[(table_ids['id_in_sf_gcp'].str.len() ==18) & (table_ids['id_in_sf_gcp'] != 'Data creation prob') ]
-        table_ids.set_index('object',drop = True, inplace = True)
-        self.object_id_dict = table_ids.to_dict()['id_in_sf_gcp']
+        if file_for_default_ids: 
+            table_ids = pd.read_csv(file_for_default_ids)
+            table_ids.fillna('',inplace = True)
+            table_ids =  table_ids[(table_ids['id'].str.len() ==18)]
+            table_ids.set_index('object',drop = True, inplace = True)
+            self.object_id_dict = table_ids.to_dict()['id_in_sf_gcp']
+        else : 
+            self.object_id_dict = {}
         self.sf = Salesforce(instance_url=self.instance_url,username=self.username,password=self.password,security_token=self.security_token,sandbox=self.sandbox)
 
     
@@ -61,7 +80,7 @@ class SalesforceFaker:
         columns_not_to_add = ["CreatedById",
                             "OwnerId",
                             "LastModifiedById"
-                            "LastModifiedDate"
+                            ,"LastModifiedDate"
                             ,"Id",
                             "CreatedDate",
                             "SystemModstamp",
@@ -119,3 +138,4 @@ class SalesforceFaker:
 
 ## todo 
 # give option to insert data in salesforce
+# add comments
