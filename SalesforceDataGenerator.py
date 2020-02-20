@@ -148,9 +148,6 @@ class SalesforceDataGenerator:
         # if data type is not  'multipicklist','picklist' or 'combobox' then generated data using faker 
         if dtype.lower()  in ['multipicklist','picklist','combobox']:
             return self.get_generator(dtype= dtype)(conf.get('picklistvalues',[None]))
-        # adding text before textual data types
-        elif dtype.lower()  in  ['textarea','string']:
-            return 'UAT_test_420 ' + self.get_generator(dtype= dtype)()
         # else select value from given list in config
         else:
             return self.get_generator(dtype= dtype)()
